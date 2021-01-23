@@ -50,7 +50,7 @@ void setup() {
   pinMode(PIR_DOWN, INPUT);
 
   FastLED.addLeds<WS2812, DATA_PIN, GRB>(leds[0], leds.Size()).setCorrection(TypicalSMD5050);
-  FastLED.setBrightness(20);
+  FastLED.setBrightness(64);
   FastLED.setMaxPowerInVoltsAndMilliamps(5, 1000);
   FastLED.clear();
   FastLED.show();
@@ -67,7 +67,7 @@ void loop() {
     c_timer = 0;
     timeOut = millis();                                              // Sygnatura czasowa, kiedy PIR jest wyzwalany. Następnie rozpocznie się cykl LED.
     downUp = 1;
-    topdown(random8(0, 9));                                          // Podświetla schody od góry do dołu
+    topdown(random8(0, 14));                                          // Podświetla schody od góry do dołu
   }
 
   if (PIR_DOWN_V == HIGH && downUp != 1)  {                          // Drugi termin pozwala na ciągłe resetowanie timeOut, jeśli jeden z nich pozostaje na dole schodów przed zejściem, ale nie pozwala górnemu PIR zresetować timeOut, gdy zejdziesz po nim.
@@ -75,15 +75,15 @@ void loop() {
     c_timer = 0;
     timeOut = millis();                                              // Sygnatura czasowa, kiedy PIR jest wyzwalany. Następnie rozpocznie się cykl LED.
     downUp = 2;
-    topdown(random8(0, 9));                                          // Podświetla schody od dołu do góry
+    topdown(random8(0, 14));                                          // Podświetla schody od dołu do góry
   }
 
   if (timeOut + 10000 < millis() && timeOut + 15000 < millis()) {    // wyłącz diody LED w kierunku ruchu.
     if (downUp == 1) {
-      ledoff(random8(0, 4));
+      ledoff(random8(0, 8));
     }
     if (downUp == 2)  {
-      ledoff(random8(0, 4));
+      ledoff(random8(0, 8));
     }
     downUp = 0;
   }
@@ -92,8 +92,8 @@ void loop() {
 void topdown(int mode) {
   Serial.println("Efekt nr:");
   Serial.println(mode);
-  // switch (9) {
-    switch (mode) {
+  //switch (14) {
+      switch (mode) {
     case 0:
       turn_on_0();
       break;
@@ -135,6 +135,21 @@ void topdown(int mode) {
         turn_on_6();
       }
       break;
+    case 10:
+      turn_on_7();
+      break;
+    case 11:
+      turn_on_off_3(colors[random8(0, 88)]);
+      break;
+    case 12:
+      turn_on_off_4(colors[random8(0, 88)]);
+      break;
+    case 13:
+      turn_on_off_5(colors[random8(0, 88)]);
+      break;
+    case 14:
+      turn_on_off_6(colors[random8(0, 88)]);
+      break;
   }
   digitalWrite(ledPin, HIGH);
   delay(200);
@@ -146,7 +161,7 @@ void ledoff(int mode) {
   Serial.println("Efekt nr:");
   Serial.println(mode);
   switch (mode) {
-    //switch (4) {
+  //switch (8) {
     case 0:
       turn_off_0 ();
       break;
@@ -162,7 +177,18 @@ void ledoff(int mode) {
     case 4:
       turn_on_off_2(CRGB::Black);
       break;
-
+    case 5:
+      turn_on_off_3(CRGB::Black);
+      break;
+    case 6:
+      turn_on_off_4(CRGB::Black);
+      break;
+    case 7:
+      turn_on_off_5(CRGB::Black);
+      break;
+    case 8:
+      turn_on_off_6(CRGB::Black);
+      break;
   }
   digitalWrite(ledPin, HIGH);
   delay(200);
@@ -427,3 +453,118 @@ void turn_on_6() {
   delay(5);
   counter++;
 }
+
+void turn_on_7() {
+  if (downUp != 1) {
+    for (int j = 0; j < STEPS; j++) {
+      for (int i = STEPS  ; i >= 0 + j; i--) {
+        leds.DrawLine(0, i + 1, WIDTH, i + 1 , CRGB(0, 0, 0));
+        leds.DrawLine(0, i, WIDTH, i, CRGB(100, 100, 100));
+        FastLED.delay(100);
+      }
+    }
+    FastLED.show();
+  }
+  if (downUp != 2) {
+    for (int j = 0; j < STEPS; j++) {
+      for (int i = 0  ; i <= STEPS - j - 1; i++) {
+        leds.DrawLine(0, i - 1, WIDTH, i - 1 , CRGB(0, 0, 0));
+        leds.DrawLine(0, i, WIDTH, i, CRGB(100, 100, 100));
+        FastLED.delay(100);
+      }
+    }
+    FastLED.show();
+  }
+}
+
+void turn_on_off_3(uint32_t  rcolors) {
+  int cx = WIDTH / 2;
+  if (downUp != 1) {
+    for (int y = 0; y < (STEPS / 2) + 1; y++) {
+      for (int x = 0; x < cx ; x++) {
+        leds.DrawPixel((WIDTH - 1) - ((cx - x) - 1), y * 2, rcolors);
+        leds.DrawPixel((cx - x) - 1, y * 2, rcolors);
+        FastLED.delay(100);
+      }
+      FastLED.show();
+      for (int x = 0; x < cx; x++) {
+        leds.DrawPixel(x, (y * 2) + 1, rcolors);
+        leds.DrawPixel((WIDTH - 1) - x, (y * 2) + 1, rcolors);
+        FastLED.delay(100);
+      }
+      FastLED.show();
+    }
+  }
+  if (downUp != 2) {
+    for (int y = (STEPS / 2); y >= 0; y--) {
+      for (int x = 0; x < cx ; x++) {
+        leds.DrawPixel((WIDTH - 1) - ((cx - x) - 1), y * 2, rcolors);
+        leds.DrawPixel((cx - x) - 1, y * 2, rcolors);
+        FastLED.delay(100);
+      }
+      FastLED.show();
+      for (int x = 0; x < cx; x++) {
+        leds.DrawPixel(x, (y * 2) - 1, rcolors);
+        leds.DrawPixel((WIDTH - 1) - x, (y * 2) - 1, rcolors);
+        FastLED.delay(100);
+      }
+      FastLED.show();
+    }
+  }
+}
+
+void turn_on_off_4(uint32_t  rcolors) {
+  int cx = WIDTH / 2;
+  if (downUp != 1) {
+    for (int y = 0; y < (STEPS / 2) + 1; y++) {
+      for (int x = 0; x < cx; x++) {
+        leds.DrawPixel(x, y * 2, rcolors);
+        leds.DrawPixel((WIDTH - 1) - x, y * 2, rcolors);
+        FastLED.delay(100);
+      }
+      FastLED.show();
+      for (int x = 0; x < cx ; x++) {
+        leds.DrawPixel((cx - x) - 1, (y * 2) + 1, rcolors);
+        leds.DrawPixel((WIDTH - 1) - ((cx - x) - 1), (y * 2) + 1, rcolors);
+        FastLED.delay(100);
+      }
+      FastLED.show();
+    }
+  }
+  if (downUp != 2) {
+    for (int y = STEPS / 2; y >= 0; y--) {
+      for (int x = 0; x < cx; x++) {
+        leds.DrawPixel(x, y * 2, rcolors);
+        leds.DrawPixel((WIDTH - 1) - x, y * 2, rcolors);
+        FastLED.delay(100);
+      }
+      FastLED.show();
+      for (int x = 0; x < cx ; x++) {
+        leds.DrawPixel((cx - x) - 1, (y * 2) - 1, rcolors);
+        leds.DrawPixel((WIDTH - 1) - ((cx - x) - 1), (y * 2) - 1, rcolors);
+        FastLED.delay(100);
+      }
+      FastLED.show();
+    }
+  }
+}
+
+void turn_on_off_5(uint32_t  rcolors) {
+  for (int y = STEPS; y > 0; y--) {
+    leds.DrawLine(0, STEPS - y - 1 , WIDTH, STEPS - y - 1, rcolors);
+    leds.DrawLine(0, y , WIDTH, y, rcolors);
+    FastLED.delay(500);
+  }
+  FastLED.show();
+}
+
+void turn_on_off_6(uint32_t  rcolors) {
+  int cy = (STEPS / 2) + 1;
+  for (int y = cy; y > 0; y--) {
+    leds.DrawLine(0, y - 1 , WIDTH, y - 1, rcolors);
+    leds.DrawLine(0, STEPS - y , WIDTH, STEPS - y, rcolors);
+    FastLED.delay(500);
+  }
+  FastLED.show();
+}
+
